@@ -1,3 +1,9 @@
+# CannaTrackerPy created by Justin Gray
+# Program for tracking the effects of different types of cannabis trains.
+# Users can save information about strains to the cloud and create journal
+# entries about the effects from each strain.
+# Users will also receive recommendations on other strains based on their usage data.
+
 import os
 import boto3
 
@@ -37,18 +43,30 @@ def getStrains():
     
     return strains
 
-def addNewStrain():
+
+
+def addNewStrain(strains):
     '''
         Description: Adds a new strain into the list of available strains and uploads it back to S3 bucket
     '''
 
     s_name = input("Strain name: ")
-    s_type = input("Type (Salvia, Indica, Hybrid): ")
+    s_type = input("Type (Sativa, Indica, Hybrid): ")
     s_thc = input("THC content in %: ")
     s_cbd = input("CBD content in %: ")
     s_form = input("Form (Whole Flower, Oil, Edible)")
 
+    d = {"name":s_name,"type":s_type,"thc":s_thc,"cbd":s_cbd,"form":s_form}
+    strains.append(d)
     
+    file = open(os.path.join(__location__,"strains.txt"),"w")
+    for s in strains:
+        file.write("{}:{}:{}:{}:{}".format(s["name"],s["type"],s["thc"],s["cbd"],s["form"]))
+    file.close()
+    
+    bucket.upload_file(os.path.join(__location__,"strains.txt"),"strains.txt")
+    
+
 
 def appLoop():
     '''
@@ -56,7 +74,8 @@ def appLoop():
     '''
     
     while True:
-        print("-*- CannaTrackerPy 0.1 -*-")
+        os.system('clear')
+        print("-*- CannaTrackerPy 0.1 -*-\n")
         print("Saved strains: ")
         
         x=1
@@ -72,7 +91,9 @@ def appLoop():
         if user_cmd.lower() == "q":
             break
         elif user_cmd.lower() == "a":
-            addNewStrain()
+            addNewStrain(strains)
 
 
 appLoop()
+
+print("Good-bye!")
